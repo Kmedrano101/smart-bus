@@ -1,0 +1,11 @@
+{
+	"domain": "smartg4",
+	"name": "Rele G4",
+	"documentation": "",
+	"dependencies": [],
+	"codeowners": ["Kmedrano101"],
+	"requirements": [],
+	"iot_class": "assumed_state",
+	"version": "1.2.3",
+	"quality_scale": "gold"
+}
