@@ -223,15 +223,3 @@ class Smartg4Device(Entity):
                 else:
                     status = True
         return status
-                
-"""
-async def main():
-    objeto = Smartg4Device()
-    await objeto.generate_trama_to_send(7, 27, 100,command_type="read_relay")
-    while True:
-        print("Ready to capture")
-        await objeto.get_status_relay(7,27,sub_id=1)
-    
-    
-if __name__ == "__main__":
-    asyncio.run(main()) # run_forever"""
