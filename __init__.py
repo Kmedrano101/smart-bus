@@ -12,18 +12,12 @@
 """
 # Import modules
 
-from ast import Sub
-import asyncio
 import binascii
-from configparser import NoSectionError
 import socket
 from ctypes import c_ushort, c_ubyte, c_byte
 from datetime import timedelta
 from homeassistant.helpers.event import track_time_interval
 from homeassistant.helpers.entity import Entity
-from homeassistant.core import callback
-import voluptuous as vol
-from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 import logging
 from .const import (
     DOMAIN,
@@ -56,6 +50,7 @@ def setup(hass, config):
         # send request to device 
         _LOGGER.info("Running the update function")
         device.set_status_relay(0,command_type="read_relay")
+
     track_time_interval(hass, request_status_relay, timedelta(seconds=3))
     
     def call_buffer(event_time):
@@ -66,10 +61,10 @@ def setup(hass, config):
             _LOGGER.info(
                 "Couldn't get values from device, retrying on next scheduled update ..."
             )
-    track_time_interval(hass, call_buffer, timedelta(seconds=1))
+            
+    track_time_interval(hass, call_buffer, timedelta(seconds=0.5))
     return True
 
-        
 class Switch_interface(Entity):
     """High-level interface for UDP connections.
     It is initialized with an optional queue size for the incoming datagrams.
@@ -82,12 +77,6 @@ class Switch_interface(Entity):
         self._telegram_udp = None
         self._dev_id = dev_id
         self._sub_id = sub_id
-        #self._hass: HomeAssistant = hass
-        
-    """def updateState(self, state) -> None:
-        self._hass.states.async_set(
-            DOMAIN_STATE, state, self.get_data_status_relay(), force_update=True
-        )"""
         
     def close(self):
         if self._closed:
@@ -99,13 +88,10 @@ class Switch_interface(Entity):
     # User methods
     def get_data_status_relay(self) -> None:
         """ Get status of a channel relay """
-        #server.sendto(self._telegram_udp,('<broadcast>',self._port))
         data, (host, port) =  server.recvfrom(1024)
         if port == self._port:
             if len(data) == 43 and data[21] == 0 and data[22] == 52:
                 self._data = data
-        #        return self._data
-        #return None
 
     def set_status_relay(self, dev_canal, level=None, command_type="write_relay") -> None:
         """Create UPD telegram according to smart-bus g4 protocol"""

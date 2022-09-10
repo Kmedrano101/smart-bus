@@ -1,18 +1,23 @@
 """Smartg4 component constants"""
+from datetime import timedelta
 
 DOMAIN = "smartg4"
-VERSION = "1.0.1"
+VERSION = "1.0.2"
+DEVICE_HOST = "ip_address"
+DEVICE_PORT = "port"
 DOMAIN_STATE = "smartg4.state"
 SIGNAL_UPDATE_ENTITY = "smartg4.device_update_{}" 
 IP = ""
 PORT = 6000
-SCAN_INTERVAL = 2
 
 # Switch configs
 
 CONF_RELE = "reles"
 CONF_DEVICE_ID = "device_id"
 CONF_SUBNET_ID = "subnet_id"
+
+ICON_SWITCH = "mdi:light-switch"
+ICON_LIGHT = "mdi:lightbulb-dimmer-50"
 
 # Define protocol base Smart-Bus G4
 

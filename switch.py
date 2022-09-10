@@ -1,6 +1,5 @@
-"""Support for smart-BUS G4 Switch Devices"""
+""""Support for smart-BUS G4 Switch Devices"""
 import logging
-from typing_extensions import Self
 import voluptuous as vol
 try:
     from homeassistant.components.switch import SwitchEntity
@@ -11,15 +10,19 @@ from homeassistant.const import CONF_NAME, STATE_ON
 import homeassistant.helpers.config_validation as cv
 from . import Switch_interface
 from homeassistant.core import callback
+from datetime import timedelta
+
 from .const import (
     DOMAIN,
     CONF_RELE,
     CONF_DEVICE_ID,
-    CONF_SUBNET_ID
+    CONF_SUBNET_ID,
+    ICON_SWITCH
 )
 
-_LOGGER = logging.getLogger(__name__)
+SCAN_INTERVAL = timedelta(seconds=5)
 
+_LOGGER = logging.getLogger(__name__)
 
 RELE_SCHEMA = vol.Schema( 
     {
@@ -39,26 +42,25 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     reles = config.get(CONF_RELE)
     switches = []
     for pinnum, op in reles.items():
-        switches.append(Smartg4Switch(pinnum, op))
+        switches.append(Smartg4Switch(pinnum, op, ICON_SWITCH))
         _LOGGER.info("Smart G4 Switch component added.")   
     async_add_entities(switches)
     
 
 class Smartg4Switch(Switch_interface, SwitchEntity):
 
-    def __init__(self, num_pin, options):
+    def __init__(self, num_pin, options, icon):
         self._state = False
         self._name = options.get(CONF_NAME)
         self._device_id = options.get(CONF_DEVICE_ID)
         self._subnet_id = options.get(CONF_SUBNET_ID)
         self._numrele = num_pin
+        self._icon = icon
         super().__init__(dev_id=self._device_id, sub_id=self._subnet_id)
-        #self._data = None
         
     @property
     def is_on(self):
         """If the switch is currently on or off."""
-        #self.schedule_update_ha_state()
         return self._state
 
     async def async_turn_on(self):
@@ -78,12 +80,17 @@ class Smartg4Switch(Switch_interface, SwitchEntity):
     @property
     def should_poll(self):
         """Polling needed."""
-        return False
+        return True
 
     @property
     def name(self):
         """Name of the device."""
         return self._name
+    
+    @property
+    def icon(self):
+        """Return the image of the sensor."""
+        return self._icon
     
     @callback
     async def async_update(self):
