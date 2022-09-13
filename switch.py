@@ -1,4 +1,4 @@
-""""Support for smart-BUS G4 Switch Devices"""
+"""Support for smart-BUS G4 Switch Devices"""
 import logging
 import voluptuous as vol
 try:
@@ -20,7 +20,7 @@ from .const import (
     ICON_SWITCH
 )
 
-SCAN_INTERVAL = timedelta(seconds=5)
+SCAN_INTERVAL = timedelta(seconds=12)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -66,16 +66,14 @@ class Smartg4Switch(Switch_interface, SwitchEntity):
     async def async_turn_on(self):
         """Turn the switch on."""
         self._state = True
-        self.set_status_relay(self._numrele, level=100)
+        await self.async_set_relay(dev_canal=self._numrele, level=100)
         self.hass.data[DOMAIN]["data"] = None
-        self.schedule_update_ha_state()
 
     async def async_turn_off(self):
         """Turn the switch off."""
         self._state = False
-        self.set_status_relay(self._numrele, level=0)
+        await self.async_set_relay(dev_canal=self._numrele, level=0)
         self.hass.data[DOMAIN]["data"] = None
-        self.schedule_update_ha_state()
 
     @property
     def should_poll(self):
@@ -101,7 +99,6 @@ class Smartg4Switch(Switch_interface, SwitchEntity):
                     self._state = False
             else:
                 self._state = STATE_ON
-            self.schedule_update_ha_state()
             return self._state
         else:
             _LOGGER.info("No data recived")

@@ -13,6 +13,7 @@ PORT = 6000
 # Switch configs
 
 CONF_RELE = "reles"
+CONF_DIMMER = "dimmers"
 CONF_DEVICE_ID = "device_id"
 CONF_SUBNET_ID = "subnet_id"
 

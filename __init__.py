@@ -21,8 +21,6 @@ from homeassistant.helpers.entity import Entity
 import logging
 from .const import (
     DOMAIN,
-    IP,
-    PORT,
     CRC_TAB,
     SMART_BUS_START_DATA,
     SMART_BUS_COMMAND,
@@ -32,6 +30,8 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 # start socket server
+IP = ""
+PORT = 6000
 ADDRESS = (IP,PORT)
 server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
 server.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
@@ -46,23 +46,23 @@ def setup(hass, config):
     
     device = Switch_interface()
     
-    def request_status_relay(event_time):
-        # send request to device 
+    async def async_request_status_relay(event_time):
         _LOGGER.info("Running the update function")
-        device.set_status_relay(0,command_type="read_relay")
+        await hass.async_create_task(device.async_set_relay(0,command_type="read_relay"))
 
-    track_time_interval(hass, request_status_relay, timedelta(seconds=3))
+    track_time_interval(hass, async_request_status_relay, timedelta(seconds=4))
     
-    def call_buffer(event_time):
-        device.get_data_status_relay()
-        if device._data is not None:
-            hass.data[DOMAIN]["data"] = device._data
+    async def async_call_buffer(event_time):
+        data = await hass.async_create_task(device.async_update_data())
+        if data is not None:
+            if len(data) == 43 and data[21] == 0 and data[22] == 52:
+                hass.data[DOMAIN]["data"] = data
         else:
             _LOGGER.info(
                 "Couldn't get values from device, retrying on next scheduled update ..."
             )
             
-    track_time_interval(hass, call_buffer, timedelta(seconds=0.5))
+    track_time_interval(hass, async_call_buffer, timedelta(seconds=2))
     return True
 
 class Switch_interface(Entity):
@@ -85,15 +85,11 @@ class Switch_interface(Entity):
         if server:
             server.close()
 
-    # User methods
-    def get_data_status_relay(self) -> None:
-        """ Get status of a channel relay """
-        data, (host, port) =  server.recvfrom(1024)
-        if port == self._port:
-            if len(data) == 43 and data[21] == 0 and data[22] == 52:
-                self._data = data
+    async def async_update_data(self):
+        data, _ = server.recvfrom(1024)
+        return data
 
-    def set_status_relay(self, dev_canal, level=None, command_type="write_relay") -> None:
+    async def async_set_relay(self, dev_canal=0, level=None, command_type="write_relay") -> None:
         """Create UPD telegram according to smart-bus g4 protocol"""
         intBufLen = 13
         if command_type == "read_relay":
