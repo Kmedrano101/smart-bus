@@ -18,6 +18,7 @@ This project aims to provide support for smart-BUS G4 devices to work on Home As
 
 For detailed protocol information and specifications, please refer to the official smart-BUS G4 protocols documentation available at [www.smarthomebus.com/downloads-7-protocols.html](www.smarthomebus.com/downloads-7-protocols.html).
 
+```yaml
 # Config Yaml
 
 smartg4:
@@ -34,7 +35,7 @@ light:
       1:
         name: Dimmer1
         device_id: 27
-
+```
 
 ## Contributing
 
